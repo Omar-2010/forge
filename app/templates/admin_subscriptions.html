@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>User Subscriptions</h2>
+  <form method="get" class="mb-3">
+    <input type="text" name="q" class="form-control" placeholder="Search by email or plan..." value="{{ request.args.get('q', '') }}">
+  </form>
+  <table class="table table-bordered table-hover">
+    <thead><tr><th>Email</th><th>Plan</th><th>Admin</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.email }}</td>
+        <td>{{ user.plan }}</td>
+        <td>{{ 'Yes' if user.is_admin else 'No' }}</td>
+        <td>
+          <form method="post" style="display:inline-block">
+            <input type="hidden" name="user_id" value="{{ user.id }}">
+            <select name="new_plan" class="form-select form-select-sm d-inline w-auto">
+              <option value="free" {% if user.plan == 'free' %}selected{% endif %}>Free</option>
+              <option value="pro" {% if user.plan == 'pro' %}selected{% endif %}>Pro</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">Change Plan</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

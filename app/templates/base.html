@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PDFForge{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <!-- Google AdSense (replace ca-pub-xxxxxxxxxxxxxxxx with your real ID) -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" data-ad-client="ca-pub-xxxxxxxxxxxxxxxx"></script>
+    {% block head %}{% endblock %}
+    <meta name="description" content="Convert PDF, Word, and images online. Fast, secure, and free. Upgrade for unlimited conversions!">
+    <meta name="keywords" content="PDF, Word, JPG, convert, online, free, merge, split, compress, iLovePDF, PDFForge">
+    <meta property="og:title" content="PDFForge - Free PDF Tools & Premium Conversions">
+    <meta property="og:description" content="Convert PDF, Word, and images online. Fast, secure, and free. Upgrade for unlimited conversions!">
+    <meta property="og:image" content="{{ url_for('static', filename='logo.png') }}">
+    <meta property="og:url" content="https://yourdomain.com/">
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+    <!-- Cookie Consent -->
+    <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+    <script>
+      window.addEventListener("load", function(){
+        window.cookieconsent.initialise({
+          palette: {popup: {background: "#222"}, button: {background: "#f1d600"}},
+          theme: "classic",
+          content: {message: "This website uses cookies to ensure you get the best experience.", dismiss: "Got it!", link: "Learn more", href: "/privacy"}
+        })
+      });
+    </script>
+</head>
+<body>
+    <!-- Improved Navbar - Organized for better usability -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="PDFForge Logo" width="40" height="40" class="me-2" style="border-radius:8px;box-shadow:0 2px 8px rgba(99,102,241,0.10);">
+                <span>PDFForge</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/pricing">Pricing</a></li>
+                    <!-- PDF Tools Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="pdfToolsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            PDF Tools
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="pdfToolsDropdown">
+                            <li><a class="dropdown-item" href="/convert/pdf-to-word">PDF to Word</a></li>
+                            <li><a class="dropdown-item" href="/convert/word-to-pdf">Word to PDF</a></li>
+                            <li><a class="dropdown-item" href="/convert/jpg-to-pdf">JPG to PDF</a></li>
+                            <li><a class="dropdown-item" href="/convert/pdf-to-jpg">PDF to JPG</a></li>
+                            <li><a class="dropdown-item" href="/merge-pdf">Merge PDF</a></li>
+                            <li><a class="dropdown-item" href="/split-pdf">Split PDF</a></li>
+                            <li><a class="dropdown-item" href="/compress-pdf">Compress PDF</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/payments">Payments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/pay">Pay with Paymob</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ads">Ads</a></li>
+                    {% if current_user.is_authenticated %}
+                    <!-- Profile Dropdown for logged-in users -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span>Logged in as {{ current_user.name or current_user.email }}</span>
+                            <span class="badge bg-primary ms-1">{{ current_user.plan|capitalize }}</span>
+                            {% if current_user.is_admin %}<span class="badge bg-danger ms-1">Admin</span>{% endif %}
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="profileDropdown">
+                            <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                            <li><a class="dropdown-item" href="/dashboard">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="/billing">Billing</a></li>
+                            <li><a class="dropdown-item" href="/reset-password">Reset Password</a></li>
+                            <li><a class="dropdown-item" href="/contact">Contact</a></li>
+                            <li><a class="dropdown-item" href="/info">Info</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                    <!-- Admin Dropdown - only for admins -->
+                    {% if current_user.is_admin %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Admin
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                            <li><a class="dropdown-item" href="/admin">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="/admin/manage">Manage Users</a></li>
+                            <li><a class="dropdown-item" href="/admin/subscriptions">Subscriptions</a></li>
+                            <li><a class="dropdown-item" href="/admin/insights">Insights</a></li>
+                            <li><a class="dropdown-item" href="/admin/finance">Finance</a></li>
+                            <li><a class="dropdown-item" href="/admin/analytics">Analytics</a></li>
+                            <li><a class="dropdown-item" href="/admin/audit_log">Audit Log</a></li>
+                            <li><a class="dropdown-item" href="/admin/pricing">Pricing</a></li>
+                            <li><a class="dropdown-item" href="/admin/payments">Payments</a></li>
+                            <li><a class="dropdown-item" href="/ads">Ads</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    {% else %}
+                    <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- End of improved navbar -->
+    {% block adsense %}
+    <!-- Google AdSense Responsive Banner -->
+    <div class="container my-4 text-center" id="adsense-banner">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1873652491838952" crossorigin="anonymous"></script>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-1873652491838952"
+             data-ad-slot="6462540339"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+    <div id="adblock-modal" class="modal" tabindex="-1" style="display:none; background:rgba(0,0,0,0.7); position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9999;">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-4 text-center">
+          <h4 class="mb-3">Ad Blocker Detected</h4>
+          <p>Our site relies on ads to provide free services. Please disable your ad blocker and reload the page to continue using PDFForge.</p>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Ad blocker detection
+      window.addEventListener('DOMContentLoaded', function() {
+        var ad = document.getElementById('adsense-banner');
+        setTimeout(function() {
+          var adBlocked = false;
+          if (!ad || ad.offsetHeight === 0 || ad.offsetWidth === 0) {
+            adBlocked = true;
+          } else {
+            // Check if the ins.adsbygoogle is hidden
+            var ins = ad.querySelector('ins.adsbygoogle');
+            if (!ins || ins.offsetHeight === 0 || ins.offsetWidth === 0 || window.getComputedStyle(ins).display === 'none') {
+              adBlocked = true;
+            }
+          }
+          if (adBlocked) {
+            document.body.innerHTML = '';
+            document.body.appendChild(document.getElementById('adblock-modal'));
+            document.getElementById('adblock-modal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+          }
+        }, 1500);
+      });
+    </script>
+    {% endblock %}
+    {% block content %}{% endblock %}
+    <footer class="bg-light text-center py-4 mt-5">
+        <div class="container">
+            <a href="/privacy">Privacy Policy</a> |
+            <a href="/contact">Contact</a> |
+            <a href="/terms">Terms</a>
+            <div class="ad-slot my-3">
+                <!-- Insert AdSense or affiliate code here -->
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-xxxxxxxxxxxxxxxx"
+                     data-ad-slot="1234567890"
+                     data-ad-format="auto"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+            <div class="ad-slot my-3">
+                <!-- Place for more ads or affiliate banners -->
+            </div>
+        </div>
+    </footer>
+    {% if not current_user.is_pro %}
+    <!-- Google AdSense code here -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-xxxxxxxxxxxxxxxx"
+         data-ad-slot="1234567890"
+         data-ad-format="auto"></ins>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+    {% endif %}
+    {% if not current_user.is_authenticated or (current_user.is_authenticated and current_user.plan != 'pro') %}
+        {% set ads = [] %}
+        {% for ad in ads %}
+            <div class="container my-4 text-center ad-dynamic">
+                {{ ad.code|safe }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Show toast notifications for flash messages
+        document.addEventListener('DOMContentLoaded', function() {
+            var flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(msg) {
+                var toast = new bootstrap.Toast(msg);
+                toast.show();
+            });
+        });
+    </script>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+          {% for category, message in messages %}
+            <div class="toast flash-message align-items-center text-bg-{{ 'success' if category == 'success' else 'danger' if category == 'danger' else 'info' }} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+              <div class="d-flex">
+                <div class="toast-body">{{ message }}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block scripts %}{% endblock %}
+    <script>
+      // Confirmation for destructive actions
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('button[data-confirm]').forEach(function(btn) {
+          btn.addEventListener('click', function(e) {
+            if(!confirm(btn.getAttribute('data-confirm'))) {
+              e.preventDefault();
+            }
+          });
+        });
+      });
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Website Insights</h2>
+  <ul class="list-group mb-3">
+    <li class="list-group-item">Visits Today: <b>{{ visits_today }}</b></li>
+    <li class="list-group-item">Visits This Week: <b>{{ visits_week }}</b></li>
+    <li class="list-group-item">Visits This Month: <b>{{ visits_month }}</b></li>
+    <li class="list-group-item">Visits This Year: <b>{{ visits_year }}</b></li>
+    <li class="list-group-item">Total Users: <b>{{ total_users }}</b></li>
+    <li class="list-group-item">Pro Users: <b>{{ pro_users }}</b></li>
+    <li class="list-group-item">Free Users: <b>{{ free_users }}</b></li>
+  </ul>
+</div>
+{% endblock %}

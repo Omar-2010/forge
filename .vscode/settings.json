@@ -1,0 +1,3 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/usr/local/lib/balena-cli/node_modules/nan"
+}

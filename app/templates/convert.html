@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Convert - PDFForge{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    {% block head %}
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+        }
+        .lux-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 2.5rem 2rem 2rem 2rem;
+            margin: 2rem auto;
+            max-width: 520px;
+            transition: box-shadow 0.3s;
+        }
+        .lux-card:hover {
+            box-shadow: 0 16px 48px 0 rgba(31, 38, 135, 0.22);
+        }
+        .lux-title {
+            font-size: 2.3rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #6366f1, #0ea5e9);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+        }
+        .lux-btn {
+            background: linear-gradient(90deg, #6366f1, #0ea5e9);
+            color: #fff;
+            border: none;
+            border-radius: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.75rem 2rem;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.12);
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .lux-btn:hover {
+            background: linear-gradient(90deg, #0ea5e9, #6366f1);
+            box-shadow: 0 4px 16px rgba(99,102,241,0.18);
+        }
+        .lux-label {
+            font-weight: 600;
+            color: #6366f1;
+            margin-bottom: 0.5rem;
+        }
+        .lux-upload {
+            border: 2px solid #6366f1;
+            border-radius: 1.5rem;
+            background: #f1f5f9;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .lux-icon {
+            font-size: 2.5rem;
+            color: #6366f1;
+            margin-bottom: 0.5rem;
+        }
+        .lux-desc {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 1.2rem;
+        }
+        .lux-footer {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin-top: 2rem;
+        }
+    </style>
+    {% endblock %}
+</head>
+<body data-show-limit-modal="{{ 'true' if current_user.is_authenticated and current_user.plan == 'free' and current_user.conversion_count >= 5 else 'false' }}">
+    {% block content %}
+    <div class="lux-card">
+        <div class="lux-title text-center">
+            <span class="lux-icon">📄</span> {{ tool }}
+        </div>
+        <div class="lux-desc text-center mb-3">
+            {% if tool == 'Merge PDF' %}
+                Combine multiple PDF files into one.
+            {% elif tool == 'Split PDF' %}
+                Extract specific pages from a PDF file.
+            {% elif tool == 'PDF to Word' %}
+                Convert PDF files to editable Word documents.
+            {% elif tool == 'Word to PDF' %}
+                Convert DOCX files to PDF format.
+            {% elif tool == 'JPG to PDF' %}
+                Convert images to PDF files.
+            {% elif tool == 'PDF to JPG' %}
+                Convert PDF pages to high-quality images.
+            {% elif tool == 'Compress PDF' %}
+                Reduce PDF file size for easy sharing.
+            {% endif %}
+        </div>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="lux-upload mb-3">
+                <label for="file" class="lux-label">Select file(s) to upload</label>
+                {% if tool == 'Merge PDF' %}
+                    <input type="file" class="form-control" id="file" name="files" multiple required accept=".pdf,application/pdf">
+                {% elif tool == 'Split PDF' %}
+                    <input type="file" class="form-control" id="file" name="file" required accept=".pdf">
+                    <div class="row mt-2">
+                        <div class="col">
+                            <input type="number" class="form-control" name="start_page" placeholder="Start Page" min="1" required>
+                        </div>
+                        <div class="col">
+                            <input type="number" class="form-control" name="end_page" placeholder="End Page" min="1" required>
+                        </div>
+                    </div>
+                {% elif tool == 'PDF to Word' %}
+                    <input type="file" class="form-control" id="file" name="file" required accept=".pdf">
+                {% elif tool == 'Word to PDF' %}
+                    <input type="file" class="form-control" id="file" name="file" required accept=".docx">
+                {% elif tool == 'JPG to PDF' %}
+                    <input type="file" class="form-control" id="file" name="file" required accept="image/*">
+                {% elif tool == 'PDF to JPG' %}
+                    <input type="file" class="form-control" id="file" name="file" required accept=".pdf">
+                {% elif tool == 'Compress PDF' %}
+                    <input type="file" class="form-control" id="file" name="file" required accept=".pdf">
+                {% else %}
+                    <input type="file" class="form-control" id="file" name="file" required>
+                {% endif %}
+            </div>
+            <button type="submit" class="lux-btn w-100 mb-2">{% if tool == 'Merge PDF' %}Upload & Merge{% else %}Upload & Convert{% endif %}</button>
+            <a href="/" class="btn btn-outline-secondary w-100 mb-2">Go to Home</a>
+        </form>
+        {% if ads %}
+            <div class="ad-slot mb-3">
+                {% for ad in ads %}
+                    <div class="user-ad mb-2">{{ ad.code|safe }}</div>
+                {% endfor %}
+            </div>
+        {% else %}
+            {% block ad_section %}{% endblock %}
+        {% endif %}
+        <div class="lux-footer text-center">
+            <span>All conversions are secure and private. Files are deleted after processing.</span>
+        </div>
+    </div>
+    <!-- Conversion Limit Modal -->
+    <div class="modal fade" id="limitModal" tabindex="-1" aria-labelledby="limitModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="limitModalLabel">Conversion Limit Reached</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            You have reached your daily conversion limit on the Free plan.<br>
+            <strong>Upgrade to Pro for unlimited conversions and no ads!</strong>
+          </div>
+          <div class="modal-footer">
+            <a href="/pricing" class="btn btn-success">Upgrade to Pro</a>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      var showLimitModal = document.body.getAttribute('data-show-limit-modal') === 'true';
+      document.addEventListener('DOMContentLoaded', function() {
+        if (showLimitModal) {
+          var limitModal = new bootstrap.Modal(document.getElementById('limitModal'));
+          limitModal.show();
+        }
+      });
+    </script>
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Admin Management - PDFForge{% endblock %}
+{% block admin_menu %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/admin">Admin Panel</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar" aria-controls="adminNavbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="adminNavbar">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="/admin">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/manage">Manage Users</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/subscriptions">Subscriptions</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/insights">Insights</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/finance">Finance</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/analytics">Analytics</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/audit-log">Audit Log</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/ads">Ads</a></li>
+      </ul>
+      <span class="navbar-text text-light">Logged in as {{ current_user.name or current_user.email }}</span>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Admin Management</h1>
+    <!-- Referral Rewards Section -->
+    <div class="alert alert-success mb-3">
+        <strong>Referral Rewards:</strong> You have referred <strong>{{ current_user.referral_credits }}</strong> users.<br>
+        Your referral code: <span class="badge bg-primary">{{ current_user.referral_code }}</span>
+    </div>
+    <!-- End Referral Rewards Section -->
+    <h3>Users</h3>
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Plan</th>
+                <th>Admin</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.name or '' }}</td>
+                <td>{{ user.plan|capitalize }}</td>
+                <td>{% if user.is_admin %}<span class="badge bg-danger">Admin</span>{% endif %}</td>
+                <td>
+                  {% if user.plan == 'pro' and user.pro_expiry %}
+                    <span class="badge bg-success">Pro ({{ user.pro_expiry.strftime('%Y-%m-%d') }})</span>
+                  {% elif user.plan == 'pro' %}
+                    <span class="badge bg-warning text-dark">Pro (No Expiry)</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Free</span>
+                  {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <h3>Ads Management</h3>
+    <a href="/admin/ads" class="btn btn-info mb-3">Go to Ads Management</a>
+    <h3>Pricing</h3>
+    <a href="/admin/pricing" class="btn btn-primary mb-3">Go to Pricing Management</a>
+    <h3>Payments</h3>
+    <a href="/admin/payments" class="btn btn-success mb-3">Go to Payments Management</a>
+    <form method="post" action="/admin/force-upgrade" class="mb-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <input type="email" name="user_email" class="form-control" placeholder="User Email to Force Pro" required>
+            </div>
+            <div class="col-md-3">
+                <input type="number" name="months" class="form-control" placeholder="Months (default 1)">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-warning">Force Upgrade to Pro</button>
+            </div>
+        </div>
+    </form>
+    <div class="alert alert-info mb-3">
+        <strong>Tip:</strong> Use the force upgrade tool above to quickly resolve payment issues for users who paid but are not on Pro.
+    </div>
+    <h3>Support</h3>
+    <a href="/admin/support" class="btn btn-outline-info mb-3 position-relative">
+        <span class="bi bi-life-preserver"></span> View All Support Requests
+        {% if unread_support_count and unread_support_count > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ unread_support_count }}
+                <span class="visually-hidden">unread support requests</span>
+            </span>
+        {% endif %}
+    </a>
+    <a href="/admin" class="btn btn-secondary mt-3">Back to Admin Dashboard</a>
+    <div class="ad-slot mt-4">
+        {% block ad_section %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

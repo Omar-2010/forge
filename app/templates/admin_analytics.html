@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Admin Analytics - PDFForge{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Analytics & Insights</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <canvas id="userGrowthChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="conversionChart"></canvas>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <canvas id="planPieChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+    <a href="/admin" class="btn btn-secondary mt-4">Back to Admin Dashboard</a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Example data, replace with real data from Flask context
+    const userGrowthData = {{ user_growth_data|tojson }};
+    const conversionData = {{ conversion_data|tojson }};
+    const planPieData = {{ plan_pie_data|tojson }};
+    const revenueData = {{ revenue_data|tojson }};
+    new Chart(document.getElementById('userGrowthChart'), {
+        type: 'line',
+        data: userGrowthData,
+        options: {responsive: true, plugins: {title: {display: true, text: 'User Growth'}}}
+    });
+    new Chart(document.getElementById('conversionChart'), {
+        type: 'bar',
+        data: conversionData,
+        options: {responsive: true, plugins: {title: {display: true, text: 'PDF Conversions'}}}
+    });
+    new Chart(document.getElementById('planPieChart'), {
+        type: 'pie',
+        data: planPieData,
+        options: {responsive: true, plugins: {title: {display: true, text: 'Plan Distribution'}}}
+    });
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'line',
+        data: revenueData,
+        options: {responsive: true, plugins: {title: {display: true, text: 'Revenue Over Time'}}}
+    });
+</script>
+{% endblock %}

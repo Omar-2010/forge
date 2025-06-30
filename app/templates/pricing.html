@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Pricing - PDFForge{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Pricing</h2>
+    {% if discount_active and discount %}
+    <div class="alert alert-success mb-4">
+        <strong>Limited Time Offer:</strong> <span>{{ discount }}% off all Pro plans!</span>
+    </div>
+    {% endif %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Free Plan</h5>
+                    <p class="card-text">10 conversions per day<br>Ads shown</p>
+                    {% if current_user.is_authenticated and current_user.plan == 'free' %}
+                        <button class="btn btn-outline-secondary" disabled>Current Plan</button>
+                    {% else %}
+                        <a href="/register" class="btn btn-outline-primary">Sign Up Free</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% for plan in plans if plan.name|lower != 'free' %}
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{{ plan.name|capitalize }} Plan</h5>
+                    <p class="card-text">
+                        Unlimited conversions<br>No ads<br>
+                        <span class="fw-bold">
+                        {% if discount_active and discount %}
+                            <span class="text-decoration-line-through text-danger">${{ plan.price|round(2) }}</span>
+                            ${{ (plan.price * (1 - discount/100))|round(2) }}/month
+                        {% else %}
+                            ${{ plan.price|round(2) }}/month
+                        {% endif %}
+                        </span>
+                    </p>
+                    {% if current_user.is_authenticated and current_user.plan == plan.name|lower %}
+                        <button class="btn btn-success" disabled>Current Plan</button>
+                        <a href="/billing" class="btn btn-outline-primary ms-2">Billing</a>
+                    {% else %}
+                        <form action="/create-checkout-session" method="POST">
+                            <input type="hidden" name="plan_id" value="{{ plan.id }}">
+                            <button type="submit" class="btn btn-primary">Upgrade to {{ plan.name|capitalize }}</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="ad-slot mt-4">
+        {% if ads %}
+            {% for ad in ads %}
+                <div class="user-ad mb-2">{{ ad.code|safe }}</div>
+            {% endfor %}
+        {% else %}
+            {% block ad_section %}{% endblock %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

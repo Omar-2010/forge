@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block title %}Profile - PDFForge{% endblock %}
+{% block content %}
+<!-- Beautiful Profile Navigation Bar -->
+<nav class="nav nav-pills flex-column flex-sm-row mb-4 shadow-sm rounded bg-white p-2">
+  <a class="flex-sm-fill text-sm-center nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="/dashboard">
+    <i class="bi bi-speedometer2"></i> Dashboard
+  </a>
+  <a class="flex-sm-fill text-sm-center nav-link {% if request.path == '/profile' %}active{% endif %}" href="/profile">
+    <i class="bi bi-person-circle"></i> Profile
+  </a>
+  <a class="flex-sm-fill text-sm-center nav-link {% if request.path == '/billing' %}active{% endif %}" href="/billing">
+    <i class="bi bi-credit-card"></i> Billing
+  </a>
+  <a class="flex-sm-fill text-sm-center nav-link text-danger" href="/logout">
+    <i class="bi bi-box-arrow-right"></i> Logout
+  </a>
+</nav>
+<!-- End Profile Navigation Bar -->
+<div class="container mt-5">
+    <h2 class="mb-4">Profile</h2>
+    {% if error_message %}
+    <div class="alert alert-danger">{{ error_message }}</div>
+    {% endif %}
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">{{ current_user.name or current_user.email }}</h5>
+                <p class="card-text"><strong>Email:</strong> {{ current_user.email }}</p>
+                <p class="card-text"><strong>Plan:</strong> <span class="badge bg-{% if current_user.is_pro %}success{% else %}secondary{% endif %}">{{ current_user.plan|capitalize }}</span></p>
+                <p class="card-text"><strong>Joined:</strong> {{ current_user.created_at.strftime('%Y-%m-%d') if current_user.created_at else '' }}</p>
+                {% if current_user.is_pro and current_user.pro_expiry %}
+                <p class="card-text"><strong>Pro Expiry:</strong> {{ current_user.pro_expiry.strftime('%Y-%m-%d') if current_user.pro_expiry else '' }} ({{ current_user.pro_expiry_days_left if current_user.pro_expiry else 0 }} days left)</p>
+                {% if current_user.pro_expiry and current_user.pro_expiry_days_left <= 7 %}
+                <div class="alert alert-warning">Your Pro plan expires in {{ current_user.pro_expiry_days_left }} day(s). <a href="/billing">Renew now</a>!</div>
+                {% endif %}
+                {% endif %}
+                {% if current_user.is_admin %}
+                <span class="badge bg-danger">Admin</span>
+                {% endif %}
+            </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        {% if current_user.is_admin %}
+        <div class="card mb-4 border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-shield-lock"></i> Admin Profile
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Admin Details</h5>
+                <ul class="list-group list-group-flush mb-3">
+                  <li class="list-group-item"><strong>Name:</strong> {{ current_user.name or 'N/A' }}</li>
+                  <li class="list-group-item"><strong>Email:</strong> {{ current_user.email }}</li>
+                  <li class="list-group-item"><strong>Admin Since:</strong> {{ current_user.created_at.strftime('%Y-%m-%d') if current_user.created_at else 'N/A' }}</li>
+                  <li class="list-group-item"><strong>Plan:</strong> {{ current_user.plan|capitalize }}</li>
+                </ul>
+                <a href="/admin" class="btn btn-warning w-100 mb-2">Admin Dashboard</a>
+                <a href="/admin/finance" class="btn btn-outline-danger w-100 mb-2">Finance</a>
+                <a href="/admin/insights" class="btn btn-outline-info w-100 mb-2">Insights</a>
+                <a href="/admin/subscriptions" class="btn btn-outline-primary w-100">User Subscriptions</a>
+            </div>
+        </div>
+        {% endif %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Referral Rewards</h5>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" id="referral-link" value="https://pdfforge.com/referral/{{ current_user.referral_code }}" readonly>
+                    <button class="btn btn-outline-secondary" type="button" id="copyReferralBtn">Copy</button>
+                </div>
+                <div id="referral-copied-msg" class="alert alert-success py-1 px-2" style="display:none;">Referral link copied!</div>
+                <p>Your referral code: <strong>{{ current_user.referral_code or 'N/A' }}</strong></p>
+                <p>Referral credits: <strong>{{ current_user.referral_credits or 0 }}</strong></p>
+                <p>Referred users: <strong>{{ current_user.referral_history|length if current_user.referral_history is not none else 0 }}</strong></p>
+                {% if current_user.referral_history and current_user.referral_history|length > 0 %}
+                <ul>
+                    {% for u in current_user.referral_history %}
+                    <li>{{ u.email }} (joined {{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '' }})</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No referred users yet.</p>
+                {% endif %}
+            </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Edit Profile</h5>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'danger' else 'info' }}">{{ message }}</div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+                <form method="POST" action="/profile/edit">
+                    <div class="mb-3">
+                        <label for="edit_email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="edit_email" name="email" value="{{ current_user.email }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="edit_name" name="name" value="{{ current_user.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Password (leave blank to keep current)</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+            </div>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+      <a href="/dashboard" class="btn btn-outline-primary">Dashboard</a>
+      <a href="/billing" class="btn btn-outline-success">Billing</a>
+      <a href="/logout" class="btn btn-outline-danger">Logout</a>
+    </div>
+</div>
+<script>
+// Copy referral link and show message
+const copyBtn = document.getElementById('copyReferralBtn');
+const referralInput = document.getElementById('referral-link');
+const copiedMsg = document.getElementById('referral-copied-msg');
+if (copyBtn && referralInput && copiedMsg) {
+  copyBtn.addEventListener('click', function() {
+    referralInput.select();
+    referralInput.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    copiedMsg.style.display = 'block';
+    setTimeout(() => copiedMsg.style.display = 'none', 2000);
+  });
+}
+</script>
+{% endblock %}

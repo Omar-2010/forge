@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard - PDFForge{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    {% block head %}
+    <style>
+        .dashboard-section {
+            background: #f8f9fa;
+            border-radius: 2rem;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+            padding: 3rem 2rem;
+            margin-top: 3rem;
+            animation: fadeIn 1.2s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: none; }
+        }
+    </style>
+    {% endblock %}
+</head>
+<body>
+    {% extends 'base.html' %}
+    {% block content %}
+    <div class="container dashboard-section">
+        <div class="ad-slot mb-3">
+            {% if ads %}
+                {% for ad in ads %}
+                    <div class="user-ad mb-2">{{ ad.code|safe }}</div>
+                {% endfor %}
+            {% else %}
+                {% block ad_section %}{% endblock %}
+            {% endif %}
+        </div>
+        {% if user %}
+        <h2 class="mb-4">Welcome, {{ user.name if user else 'Guest' }}!</h2>
+        <p>Email: {{ user.email }}</p>
+        <p>Status: <span class="badge bg-{% if user.is_pro %}success{% else %}secondary{% endif %}">{{ user.plan|capitalize }}</span></p>
+        {% if user.is_pro and user.pro_expiry %}
+        <p><strong>Pro Expiry:</strong> {{ user.pro_expiry.strftime('%Y-%m-%d') if user.pro_expiry else '' }} ({{ user.pro_expiry_days_left if user.pro_expiry else 0 }} days left)</p>
+        {% if user.pro_expiry and user.pro_expiry_days_left <= 7 %}
+        <div class="alert alert-warning">Your Pro plan expires in {{ user.pro_expiry_days_left }} day(s). <a href="/billing">Renew now</a>!</div>
+        {% endif %}
+        {% endif %}
+        {% if not user.is_pro %}
+        <a href="/pricing" class="btn btn-primary ms-2">Upgrade to Pro</a>
+        {% endif %}
+        <a href="/logout" class="btn btn-secondary">Logout</a>
+        {% endif %}
+        <h4 class="mt-5">Conversion History</h4>
+        <table class="table mt-3">
+            <thead><tr><th>File</th><th>Type</th><th>Date</th></tr></thead>
+            <tbody>
+                <!-- Loop user files here -->
+            </tbody>
+        </table>
+        <div class="ad-slot mt-4">
+            {# ad_section block is only in base.html, so just let it render here #}
+        </div>
+        {% if current_user.is_authenticated and current_user.plan == 'free' and current_user.conversion_count >= 5 %}
+        <div class="alert alert-danger text-center mt-4">
+            You have reached your daily conversion limit (5 per day on Free plan). Upgrade to Pro for unlimited conversions.
+        </div>
+        {% endif %}
+        <div class="alert alert-info mt-4">
+            <strong>Why go Pro?</strong><br>
+            <ul class="mb-0">
+                <li>Unlimited conversions every day</li>
+                <li>No ads, ever</li>
+                <li>Priority support</li>
+                <li>Access to all premium tools</li>
+            </ul>
+            <a href="/pricing" class="btn btn-success mt-2">Upgrade to Pro</a>
+        </div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Refer & Earn</h5>
+                <p class="card-text">Share your referral link and earn free conversions or credits for every friend who signs up!</p>
+                {% if current_user.is_authenticated %}
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" id="referral-link" value="{{ url_for('auth.register', ref=current_user.referral_code, _external=True) if current_user.referral_code else '' }}" readonly>
+                        <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('referral-link').value)">Copy</button>
+                    </div>
+                    <p>You have <strong>{{ current_user.referral_credits or 0 }}</strong> referral credits.</p>
+                    <p>Referred users: <strong>{{ current_user.referral_history|length if current_user.referral_history is not none else 0 }}</strong></p>
+                    {% if current_user.referral_history and current_user.referral_history|length > 0 %}
+                    <ul>
+                        {% for u in current_user.referral_history %}
+                        <li>{{ u.email }} (joined {{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '' }})</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No referred users yet.</p>
+                    {% endif %}
+                {% else %}
+                    <a href="/login" class="btn btn-primary">Login to get your referral link</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Payments - PDFForge{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Upgrade to Premium</h2>
+    <div class="row">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">1 Month</h5>
+                    <p class="card-text">5 USD (~EGP 240)</p>
+                    <a href="/pay/1m" class="btn btn-primary w-100">Pay with Paymob</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">3 Months</h5>
+                    <p class="card-text">10 USD (~EGP 480)</p>
+                    <a href="/pay/3m" class="btn btn-primary w-100">Pay with Paymob</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">6 Months</h5>
+                    <p class="card-text">25 USD (~EGP 1200)</p>
+                    <a href="/pay/6m" class="btn btn-primary w-100">Pay with Paymob</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">1 Year</h5>
+                    <p class="card-text">40 USD (~EGP 1920)</p>
+                    <a href="/pay/1y" class="btn btn-primary w-100">Pay with Paymob</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-info mt-4">
+        <strong>Note:</strong> Prices in EGP are approximate and may vary with exchange rates. Premium is activated instantly after payment.
+    </div>
+</div>
+{% endblock %}

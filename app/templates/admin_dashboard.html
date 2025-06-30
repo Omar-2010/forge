@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard - PDFForge{% endblock %}
+{% block admin_menu %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/admin">Admin Panel</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar" aria-controls="adminNavbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="adminNavbar">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="/admin">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/manage">Manage Users</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/subscriptions">Subscriptions</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/insights">Insights</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/finance">Finance</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/analytics">Analytics</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/audit-log">Audit Log</a></li>
+      </ul>
+      <span class="navbar-text text-light">Logged in as {{ current_user.name or current_user.email }}</span>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Admin Dashboard</h1>
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Users</h5>
+                    <p class="display-6">{{ total_users }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Pro Users</h5>
+                    <p class="display-6 text-success">{{ pro_users }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Free Users</h5>
+                    <p class="display-6 text-secondary">{{ free_users }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Sign-ins</h5>
+                    <ul class="list-unstyled mb-0" style="max-height:100px;overflow:auto;">
+                        {% for signin in recent_signins %}
+                        <li><small>{{ signin.timestamp.strftime('%Y-%m-%d %H:%M') }} - {{ signin.user.email }} ({{ signin.method }})</small></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Referral Rewards Section -->
+    <div class="alert alert-success mb-3">
+        <strong>Referral Rewards:</strong> You have referred <strong>{{ current_user.referral_credits }}</strong> users.<br>
+        Your referral code: <span class="badge bg-primary">{{ current_user.referral_code }}</span>
+    </div>
+    <!-- End Referral Rewards Section -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">User Management</h3>
+        <form class="d-flex" method="get" action="/admin">
+            <input class="form-control me-2" type="search" name="q" placeholder="Search email or name" value="{{ request.args.get('q', '') }}">
+            <button class="btn btn-outline-primary" type="submit">Search</button>
+        </form>
+        <a href="/admin/export_users" class="btn btn-success ms-2">Export Users (CSV)</a>
+        <a href="/admin/audit_log" class="btn btn-info ms-2">Audit Log</a>
+    </div>
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Plan</th>
+                <th>Admin</th>
+                <th>Sign-ins</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.name or '' }}</td>
+                <td>{{ user.plan|capitalize }}</td>
+                <td>{% if user.is_admin %}<span class="badge bg-success">Admin</span>{% endif %}</td>
+                <td>
+                  {% if user_signins[user.id] %}
+                    <ul class="list-unstyled mb-0">
+                      {% for signin in user_signins[user.id][:5] %}
+                        <li><small>{{ signin.timestamp.strftime('%Y-%m-%d %H:%M') }} ({{ signin.method }})</small></li>
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    <span class="text-muted">No sign-ins</span>
+                  {% endif %}
+                </td>
+                <td>
+                    {% if not user.is_admin %}
+                    <form method="post" style="display:inline-block">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <input type="text" name="new_name" value="{{ user.name or '' }}" placeholder="Edit name" class="form-control form-control-sm mb-1" style="width:120px;display:inline-block;">
+                        <select name="new_plan" class="form-select form-select-sm mb-1" style="width:100px;display:inline-block;">
+                            <option value="free" {% if user.plan == 'free' %}selected{% endif %}>Free</option>
+                            <option value="pro" {% if user.plan == 'pro' %}selected{% endif %}>Pro</option>
+                        </select>
+                        <button name="action" value="edit" class="btn btn-sm btn-info mb-1">Save</button>
+                        {% if user.plan == 'free' %}
+                        <button name="action" value="upgrade" class="btn btn-sm btn-primary mb-1">Upgrade to Pro</button>
+                        {% else %}
+                        <button name="action" value="downgrade" class="btn btn-sm btn-warning mb-1">Downgrade to Free</button>
+                        {% endif %}
+                        <button name="action" value="delete" class="btn btn-sm btn-danger mb-1" onclick="return confirm('Delete this user?')">Delete</button>
+                    </form>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <!-- Pagination controls -->
+    <nav aria-label="User pagination">
+      <ul class="pagination justify-content-center">
+        {% if users_paginated.has_prev %}
+          <li class="page-item"><a class="page-link" href="?page={{ users_paginated.prev_num }}">Previous</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ users_paginated.page }} of {{ users_paginated.pages }}</span></li>
+        {% if users_paginated.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ users_paginated.next_num }}">Next</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+    <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+    <div class="ad-slot mt-4">
+        <!-- ad_section block is only in base.html, so just let it render here -->
+    </div>
+</div>
+{% endblock %}

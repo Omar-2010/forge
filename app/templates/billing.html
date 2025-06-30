@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Billing - PDFForge{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Billing & Subscription</h2>
+    {% if current_user.plan == 'pro' %}
+        <div class="alert alert-success">You are on the <strong>Pro</strong> plan.</div>
+        <p>Manage your subscription and payment details below.</p>
+        <form action="/downgrade" method="POST" class="mt-3">
+            <button type="submit" class="btn btn-warning">Downgrade to Free</button>
+        </form>
+    {% else %}
+        <div class="alert alert-info">You are on the <strong>Free</strong> plan.</div>
+        <a href="/pricing" class="btn btn-success">Upgrade to Pro</a>
+    {% endif %}
+</div>
+{% endblock %}

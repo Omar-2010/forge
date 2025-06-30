@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Admin Payments | PDFForge{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h2>Payments</h2>
+  <a href="/admin/pricing" class="btn btn-primary mb-3">Manage Pricing Plans</a>
+  <form class="row g-2 mb-3" method="get">
+    <div class="col-auto">
+      <input type="text" name="q" class="form-control" placeholder="Search by plan or status" value="{{ request.args.q }}">
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-outline-primary">Search</button>
+    </div>
+  </form>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th>Method</th>
+        <th>Plan</th>
+        <th>Duration</th>
+        <th>Recurring</th>
+        <th>Pro Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for payment in payments %}
+      <tr {% if payment.status == 'paid' and payment.user and payment.user.plan != 'pro' %}class="table-warning"{% endif %}>
+        <td>{{ payment.id }}</td>
+        <td>{{ payment.user.email if payment.user else 'N/A' }}</td>
+        <td>{{ payment.amount }}</td>
+        <td>{{ payment.status }}</td>
+        <td>{{ payment.timestamp.strftime('%Y-%m-%d %H:%M') if payment.timestamp else '' }}</td>
+        <td>{{ payment.method }}</td>
+        <td>{{ payment.plan or 'N/A' }}</td>
+        <td>{{ payment.duration_months }} month{{ 's' if payment.duration_months > 1 else '' }}</td>
+        <td>{% if payment.is_recurring %}Yes{% else %}No{% endif %}</td>
+        <td>
+          {% if payment.status == 'paid' and payment.user %}
+            {% if payment.user.plan == 'pro' %}
+              <span class="badge bg-success">Pro</span>
+            {% else %}
+              <span class="badge bg-warning text-dark">NOT PRO</span>
+            {% endif %}
+          {% else %}
+            <span class="badge bg-secondary">N/A</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <nav aria-label="Payments pagination">
+    <ul class="pagination">
+      {% if payments.has_prev %}
+      <li class="page-item"><a class="page-link" href="?page={{ payments.prev_num }}&q={{ request.args.q }}">Previous</a></li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">Previous</span></li>
+      {% endif %}
+      <li class="page-item disabled"><span class="page-link">Page {{ payments.page }} of {{ payments.pages }}</span></li>
+      {% if payments.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ payments.next_num }}&q={{ request.args.q }}">Next</a></li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">Next</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+  <div class="alert alert-warning mt-3">
+    <strong>Note:</strong> Any row highlighted means the user paid but is not on the Pro plan. Investigate or fix manually if needed.
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Admin - Ads{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Admin: Manage Ads</h2>
+  <form method="post" class="mb-4">
+    <input type="hidden" name="action" value="add">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <input type="text" name="name" class="form-control" placeholder="Ad Name" required>
+      </div>
+      <div class="col-md-3">
+        <select name="position" class="form-select">
+          <option value="main">Main</option>
+          <option value="sidebar">Sidebar</option>
+          <option value="footer">Footer</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <input type="text" name="code" class="form-control" placeholder="Ad HTML/JS code" required>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Add Ad</button>
+      </div>
+    </div>
+  </form>
+  <form class="row g-2 mb-3" method="get">
+    <div class="col-auto">
+      <input type="text" name="q" class="form-control" placeholder="Search ads by name" value="{{ request.args.q }}">
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-outline-primary">Search</button>
+    </div>
+  </form>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Position</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ad in ads %}
+      <tr>
+        <form method="post">
+          <input type="hidden" name="ad_id" value="{{ ad.id }}">
+          <td><input type="text" name="name" value="{{ ad.name }}" class="form-control"></td>
+          <td>
+            <select name="position" class="form-select">
+              <option value="main" {% if ad.position=='main' %}selected{% endif %}>Main</option>
+              <option value="sidebar" {% if ad.position=='sidebar' %}selected{% endif %}>Sidebar</option>
+              <option value="footer" {% if ad.position=='footer' %}selected{% endif %}>Footer</option>
+            </select>
+          </td>
+          <td>
+            <input type="checkbox" name="active" {% if ad.active %}checked{% endif %}>
+          </td>
+          <td>{{ ad.created_at.strftime('%Y-%m-%d') }}</td>
+          <td>
+            <input type="hidden" name="action" value="edit">
+            <button type="submit" class="btn btn-sm btn-success">Save</button>
+        </form>
+        <form method="post" style="display:inline-block">
+          <input type="hidden" name="ad_id" value="{{ ad.id }}">
+          <input type="hidden" name="action" value="delete">
+          <button type="submit" class="btn btn-sm btn-danger" data-confirm="Delete this ad?">Delete</button>
+        </form>
+          </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <nav aria-label="Ads pagination">
+    <ul class="pagination">
+      {% if ads.has_prev %}
+      <li class="page-item"><a class="page-link" href="?page={{ ads.prev_num }}&q={{ request.args.q }}">Previous</a></li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">Previous</span></li>
+      {% endif %}
+      <li class="page-item disabled"><span class="page-link">Page {{ ads.page }} of {{ ads.pages }}</span></li>
+      {% if ads.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ ads.next_num }}&q={{ request.args.q }}">Next</a></li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">Next</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+{% endblock %}
